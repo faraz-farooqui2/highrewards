@@ -1,18 +1,25 @@
 package com.highrewards.base;
 
 import org.openqa.selenium.WebDriver;
-
-import com.automation.highrewards.utils.WebDriverFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import com.automation.highrewards.utils.ConfigReader;
+import com.automation.highrewards.utils.WebDriverFactory;
 
 public class BaseWebTest {
     public WebDriver driver;
-    private String browser = "chrome"; // Set default browser or retrieve from config
-    private String url = "http://example.com"; // Set default URL or retrieve from config
 
     @BeforeMethod
     public void setUp() {
+
+        String browser = ConfigReader.getProperty("browser");
+        String url = ConfigReader.getProperty("URL");
+
+        // Debugging output
+        System.out.println("Configured Browser: " + browser);
+        System.out.println("Configured URL: " + url);
+
+        // Initialize WebDriver and open URL
         driver = WebDriverFactory.createDriver(browser);
         driver.get(url);
     }
@@ -24,4 +31,3 @@ public class BaseWebTest {
         }
     }
 }
-

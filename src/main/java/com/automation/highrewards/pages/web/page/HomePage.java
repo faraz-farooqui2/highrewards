@@ -1,8 +1,7 @@
-package com.automation.highrewards.pages.web;
+package com.automation.highrewards.pages.web.page;
 
 import com.automation.highrewards.base.BaseWebDriver;
 import com.automation.highrewards.pages.web.locators.HomePageLocators;
-import org.openqa.selenium.By;
 
 public class HomePage extends BaseWebDriver {
 

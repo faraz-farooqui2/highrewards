@@ -5,11 +5,13 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class ConfigReader {
-    private final Properties properties;
 
-    public ConfigReader(String configFilePath) {
-        properties = new Properties();
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(configFilePath)) {
+    private static Properties properties = new Properties();
+
+    // Static block to load properties file
+    static {
+        String configFilePath = "config.properties"; // Default path
+        try (InputStream inputStream = ConfigReader.class.getClassLoader().getResourceAsStream(configFilePath)) {
             if (inputStream != null) {
                 properties.load(inputStream);
             } else {
@@ -17,12 +19,12 @@ public class ConfigReader {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            throw new RuntimeException("Failed to load configuration file: " + configFilePath);
+            throw new RuntimeException("Failed to load configuration file: " + configFilePath, e);
         }
     }
 
-    public String getProperty(String key) {
+    // Method to get property by key
+    public static String getProperty(String key) {
         return properties.getProperty(key);
     }
 }
-
