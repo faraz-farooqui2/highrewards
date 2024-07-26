@@ -1,19 +1,19 @@
 package com.highrewards.base;
 
+import com.automation.highrewards.utils.MobileDriverFactory;
 import io.appium.java_client.AppiumDriver;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import com.automation.highrewards.utils.ConfigReader;
-import com.automation.highrewards.utils.MobileDriverFactory; // Ensure this utility is correctly imported
 
 import java.net.MalformedURLException;
 
 public class BaseMobileTest {
-    public AppiumDriver driver;
+    protected AppiumDriver driver;
 
     @BeforeMethod
     public void setUp() throws MalformedURLException {
-        // Retrieve properties directly using ConfigReader
+
         String platform = ConfigReader.getProperty("platform");
         String deviceName = ConfigReader.getProperty("deviceName");
         String appPackage = ConfigReader.getProperty("appPackage");
@@ -21,9 +21,14 @@ public class BaseMobileTest {
         String appPath = ConfigReader.getProperty("appPath");
         String udid = ConfigReader.getProperty("udid");
         String appiumServerUrl = ConfigReader.getProperty("appiumServerUrl");
+        String appUrl = ConfigReader.getProperty("appURL");
 
-        // Create driver using MobileDriverFactory
         driver = MobileDriverFactory.createDriver(platform, deviceName, appPackage, appActivity, appPath, udid, appiumServerUrl);
+
+        // Open the app URL if applicable
+        if (appUrl != null && !appUrl.isEmpty()) {
+            driver.get(appUrl); // Open URL before each test
+        }
     }
 
     @AfterMethod

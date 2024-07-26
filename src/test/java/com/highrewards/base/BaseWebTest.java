@@ -1,17 +1,18 @@
 package com.highrewards.base;
 
+import com.automation.highrewards.base.BaseWebDriver;
 import org.openqa.selenium.WebDriver;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+
 import com.automation.highrewards.utils.ConfigReader;
 import com.automation.highrewards.utils.WebDriverFactory;
 
 public class BaseWebTest {
     public WebDriver driver;
 
-    @BeforeMethod
+    @BeforeClass
     public void setUp() {
-
         String browser = ConfigReader.getProperty("browser");
         String url = ConfigReader.getProperty("URL");
 
@@ -21,13 +22,12 @@ public class BaseWebTest {
 
         // Initialize WebDriver and open URL
         driver = WebDriverFactory.createDriver(browser);
-        driver.get(url);
+        BaseWebDriver.setDriver(driver);
+        BaseWebDriver.getDriver().get(url);
     }
 
-    @AfterMethod
+    @AfterClass
     public void tearDown() {
-        if (driver != null) {
-            driver.quit();
-        }
+        BaseWebDriver.clearDriver(); // Clean up WebDriver instance
     }
 }

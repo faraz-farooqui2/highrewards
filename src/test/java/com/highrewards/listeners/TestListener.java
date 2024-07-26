@@ -1,35 +1,34 @@
 package com.highrewards.listeners;
 
+import com.automation.highrewards.utils.ConfigReader;
 import com.automation.highrewards.utils.ScreenshotUtility;
 import com.automation.highrewards.base.BaseWebDriver;
 import com.automation.highrewards.base.BaseMobileDriver;
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import io.appium.java_client.AppiumDriver;
 import org.openqa.selenium.WebDriver;
-import com.aventstack.extentreports.ExtentReports;
-import com.aventstack.extentreports.ExtentTest;
-
-import org.testng.ITestContext;
-import org.testng.ITestListener;
-import org.testng.ITestResult;
+import org.testng.*;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class TestListener implements ITestListener {
+public class TestListener implements ITestListener, ISuiteListener {
 
     private ExtentReports extent;
+    private String executionMode;
     private final ThreadLocal<ExtentTest> test = new ThreadLocal<>();
 
     @Override
-    public void onStart(ITestContext context) {
-        String testType = context.getCurrentXmlTest().getName().contains("Mobile") ? "Mobile" : "Web";
+    public void onStart(ISuite suite) {
+        executionMode = ConfigReader.getProperty("executionMode");
+        String testType = suite.getName().contains("Mobile") ? "Mobile" : "Web";
 
         // Create a timestamp for the report folder
         String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         String reportPath = System.getProperty("user.dir") + "/src/test/resources/extent-reports/" + testType + "/Report_" + timestamp;
-
 
         File reportDir = new File(reportPath);
         try {
@@ -52,20 +51,24 @@ public class TestListener implements ITestListener {
         extent = new ExtentReports();
         extent.attachReporter(sparkReporter);
 
-        System.out.println("Test suite started: " + context.getName());
+        System.out.println("Test suite started: " + suite.getName());
     }
 
     @Override
     public void onTestStart(ITestResult result) {
-        ExtentTest extentTest = extent.createTest(result.getMethod().getMethodName());
-        test.set(extentTest);
-        System.out.println("Starting test: " + result.getMethod().getMethodName());
+        if ("sequential".equalsIgnoreCase(executionMode)) {
+            ExtentTest extentTest = extent.createTest(result.getMethod().getMethodName());
+            test.set(extentTest);
+            System.out.println("Starting test: " + result.getMethod().getMethodName());
+        }
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
         // Log test success
-        test.get().pass("Test passed");
+        if ("sequential".equalsIgnoreCase(executionMode)) {
+            test.get().pass("Test passed");
+        }
         System.out.println("Test passed: " + result.getMethod().getMethodName());
     }
 
@@ -78,21 +81,27 @@ public class TestListener implements ITestListener {
         if (webDriver != null) {
             try {
                 String screenshotPath = ScreenshotUtility.captureWebScreenshot(webDriver, result.getMethod().getMethodName());
-                test.get().fail("Screenshot: " + test.get().addScreenCaptureFromPath(screenshotPath));
+                if ("sequential".equalsIgnoreCase(executionMode)) {
+                    test.get().fail("Screenshot: " + test.get().addScreenCaptureFromPath(screenshotPath));
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         } else if (appiumDriver != null) {
             try {
                 String screenshotPath = ScreenshotUtility.captureMobileScreenshot(appiumDriver, result.getMethod().getMethodName());
-                test.get().fail("Screenshot: " + test.get().addScreenCaptureFromPath(screenshotPath));
+                if ("sequential".equalsIgnoreCase(executionMode)) {
+                    test.get().fail("Screenshot: " + test.get().addScreenCaptureFromPath(screenshotPath));
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
         // Log test failure details
-        test.get().fail(result.getThrowable());
+        if ("sequential".equalsIgnoreCase(executionMode)) {
+            test.get().fail(result.getThrowable());
+        }
         System.out.println("Test failed: " + result.getMethod().getMethodName());
         System.out.println("Failure reason: " + result.getThrowable().getMessage());
     }
@@ -100,7 +109,9 @@ public class TestListener implements ITestListener {
     @Override
     public void onTestSkipped(ITestResult result) {
         // Log test skipped details
-        test.get().skip(result.getThrowable());
+        if ("sequential".equalsIgnoreCase(executionMode)) {
+            test.get().skip(result.getThrowable());
+        }
         System.out.println("Test skipped: " + result.getMethod().getMethodName());
         System.out.println("Skip reason: " + result.getThrowable().getMessage());
     }
